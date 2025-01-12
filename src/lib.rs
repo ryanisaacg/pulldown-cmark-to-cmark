@@ -82,6 +82,9 @@ pub struct State<'a> {
     pub current_heading: Option<Heading<'a>>,
     /// True whenever between `Start(TableCell)` and `End(TableCell)`
     pub in_table_cell: bool,
+    /// True when in the first line of a quote block, used to avoid escaping
+    /// alert characters
+    pub first_line_of_quote: bool,
 
     /// Keeps track of the last seen shortcut/link
     pub current_shortcut_text: Option<String>,
@@ -534,7 +537,8 @@ where
                             BlockQuoteKind::Caution => " > [!CAUTION]",
                         })
                         .unwrap_or(every_line_padding);
-                    state.newlines_before_start = 1;
+                    state.newlines_before_start = 0;
+                    state.first_line_of_quote = true;
 
                     // if we consumed some newlines, we know that we can just write out the next
                     // level in our blockquote. This should work regardless if we have other
@@ -870,11 +874,20 @@ where
                 }
             }
             state.last_was_text_without_trailing_newline = !text.ends_with('\n');
-            print_text_without_trailing_newline(
-                &escape_special_characters(text, state, options),
-                formatter,
-                &state.padding,
-            )
+            let result = if state.first_line_of_quote {
+                // Very blunt instrument I'd like to fix at some point. Don't escape any special
+                // characters in the first line of a quote block, to allow custom alert types
+                print_text_without_trailing_newline(&text, formatter, &state.padding)
+            } else {
+                let escaped_text = escape_special_characters(text, state, options);
+                print_text_without_trailing_newline(&escaped_text, formatter, &state.padding)
+            };
+
+            if state.first_line_of_quote && text.ends_with('\n') {
+                state.first_line_of_quote = false;
+            }
+
+            result
         }
         InlineHtml(text) => {
             consume_newlines(formatter, state)?;

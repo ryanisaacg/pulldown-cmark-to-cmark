@@ -414,7 +414,7 @@ mod blockquote {
     #[test]
     fn it_pops_padding_on_quote_end() {
         let mut first = State::default();
-        first.padding = vec![" > ".into()];
+        first.padding = vec!["> ".into()];
 
         let mut second = State::default();
         second.newlines_before_start = 2;
@@ -427,7 +427,7 @@ mod blockquote {
     fn it_pushes_padding_on_quote_start() {
         let mut state = State::default();
         state.newlines_before_start = 1;
-        state.padding = vec![" > ".into()];
+        state.padding = vec!["> ".into()];
         assert_eq!(fmte(&[Event::Start(Tag::BlockQuote(None)),]).1, state);
     }
 
@@ -435,19 +435,19 @@ mod blockquote {
     fn with_html() {
         let s = indoc!(
             "
-             > <table>
-             > </table>
+            > <table>
+            > </table>
              "
         );
 
         assert_events_eq_both(s);
 
-        assert_eq!(fmts_both(s).0, "\n > \n > <table>\n > </table>\n > ");
+        assert_eq!(fmts_both(s).0, "\n> \n> <table>\n> </table>\n> ");
     }
 
     #[test]
     fn with_inlinehtml() {
-        assert_eq!(fmts_both(" > <br>").0, "\n > \n > <br>");
+        assert_eq!(fmts_both("> <br>").0, "\n> \n> <br>");
     }
 
     #[test]
@@ -464,48 +464,48 @@ mod blockquote {
     fn with_codeblock() {
         let s = indoc!(
             "
-             > ```a
-             > t1
-             > t2
-             > ```
+            > ```a
+            > t1
+            > t2
+            > ```
             "
         );
 
         assert_events_eq_both(s);
 
-        assert_eq!(fmts_both(s).0, "\n > \n > ````a\n > t1\n > t2\n > ````",);
+        assert_eq!(fmts_both(s).0, "\n> \n> ````a\n> t1\n> t2\n> ````",);
     }
 
     #[test]
     fn nested() {
         let s = indoc!(
             "
-             > a
-             >
-             > > b
-             >
-             > c
+            > a
+            >
+            >> b
+            >
+            > c
             "
         );
 
         assert_events_eq_both(s);
 
-        assert_eq!(fmts_both(s).0, "\n > \n > a\n > \n >  > \n >  > b\n > \n > c",);
+        assert_eq!(fmts_both(s).0, "\n> \n> a\n> \n> > \n> > b\n> \n> c",);
     }
 
     #[test]
     fn initially_nested() {
         let s = indoc!(
             "
-             > > foo
-             > bar
-             > > baz
+            >> foo
+            > bar
+            >> baz
             "
         );
 
         assert_events_eq_both(s);
 
-        assert_eq!(fmts_both(s).0, "\n > \n >  > \n >  > foo\n >  > bar\n >  > baz",);
+        assert_eq!(fmts_both(s).0, "\n> \n> > \n> > foo\n> > bar\n> > baz",);
     }
 
     #[test]
@@ -520,20 +520,20 @@ mod blockquote {
         {
             let mut state = State::default();
             state.newlines_before_start = 2;
-            assert_eq!(fmts_both(s), ("\n > \n > a\n > b  \n > c".into(), state));
+            assert_eq!(fmts_both(s), ("\n> \n> a\n> b  \n> c".into(), state));
         }
     }
 
     #[test]
     fn empty() {
-        let s = " > ";
+        let s = "> ";
 
         assert_events_eq_both(s);
 
         {
             let mut state = State::default();
             state.newlines_before_start = 2;
-            assert_eq!(fmts_both(s), ("\n > ".into(), state));
+            assert_eq!(fmts_both(s), ("\n> ".into(), state));
         }
     }
 
@@ -541,9 +541,9 @@ mod blockquote {
     fn with_blank_line() {
         let s = indoc!(
             "
-            > foo
+           > foo
 
-            > bar
+           > bar
             "
         );
 
@@ -551,17 +551,17 @@ mod blockquote {
 
         let mut state = State::default();
         state.newlines_before_start = 2;
-        assert_eq!(fmts_both(s), ("\n > \n > foo\n\n > \n > bar".into(), state));
+        assert_eq!(fmts_both(s), ("\n> \n> foo\n\n> \n> bar".into(), state));
     }
 
     #[test]
     fn with_lazy_continuation() {
         let s = indoc!(
             "
-            > foo
+           > foo
             baz
 
-            > bar
+           > bar
             "
         );
 
@@ -569,16 +569,16 @@ mod blockquote {
 
         let mut state = State::default();
         state.newlines_before_start = 2;
-        assert_eq!(fmts_both(s), ("\n > \n > foo\n > baz\n\n > \n > bar".into(), state));
+        assert_eq!(fmts_both(s), ("\n> \n> foo\n> baz\n\n> \n> bar".into(), state));
     }
 
     #[test]
     fn with_lists() {
         let s = indoc!(
             "
-            - > * foo
-              >     * baz
-                - > bar
+            -> * foo
+             >     * baz
+                -> bar
             "
         );
 
@@ -589,7 +589,7 @@ mod blockquote {
         assert_eq!(
             fmts_both(s),
             (
-                "* \n   > \n   > * foo\n   >   * baz\n  \n  * \n     > \n     > bar".into(),
+                "* \n  > \n  > * foo\n  >   * baz\n  \n  * \n    > \n    > bar".into(),
                 state
             )
         );
@@ -599,35 +599,35 @@ mod blockquote {
     fn complex_nesting() {
         assert_events_eq_both(indoc!(
             "
-            > one
-            > > two
-            > > three
-            > four
-            >
-            > > five
-            >
-            > > six
-            > seven
-            > > > eight
+           > one
+           >> two
+           >> three
+           > four
+           >
+           >> five
+           >
+           >> six
+           > seven
+           >>> eight
             nine
 
-            > ten
+           > ten
 
-            >
+           >
 
-            >
-            > >
+           >
+           >>
 
 
-            > >
+           >>
 
-            > - eleven
-            >    - twelve
-            > > thirteen
-            > -
+           > - eleven
+           >    - twelve
+           >> thirteen
+           > -
 
-            - > fourteen
-                - > fifteen
+            -> fourteen
+                -> fifteen
             "
         ));
     }
