@@ -539,17 +539,17 @@ where
                     write!(formatter, "{} ", Repeated('#', *level as usize))
                 }
                 BlockQuote(kind) => {
-                    let every_line_padding = " > ";
+                    let every_line_padding = "> ";
                     let first_line_padding = kind
                         .map(|kind| match kind {
-                            BlockQuoteKind::Note => " > [!NOTE]",
-                            BlockQuoteKind::Tip => " > [!TIP]",
-                            BlockQuoteKind::Important => " > [!IMPORTANT]",
-                            BlockQuoteKind::Warning => " > [!WARNING]",
-                            BlockQuoteKind::Caution => " > [!CAUTION]",
+                            BlockQuoteKind::Note => "> [!NOTE] ",
+                            BlockQuoteKind::Tip => "> [!TIP] ",
+                            BlockQuoteKind::Important => "> [!IMPORTANT] ",
+                            BlockQuoteKind::Warning => "> [!WARNING] ",
+                            BlockQuoteKind::Caution => "> [!CAUTION] ",
                         })
                         .unwrap_or(every_line_padding);
-                    state.newlines_before_start = 1;
+                    state.newlines_before_start = 0;
 
                     // if we consumed some newlines, we know that we can just write out the next
                     // level in our blockquote. This should work regardless if we have other
